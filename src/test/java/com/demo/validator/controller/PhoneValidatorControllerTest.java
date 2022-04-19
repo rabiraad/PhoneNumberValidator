@@ -4,8 +4,11 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.demo.validator.constants.ErrorMessages;
+import com.demo.validator.exception.InvalidPhoneNumberException;
 import com.demo.validator.model.PhoneNumberDetails;
 import com.demo.validator.service.PhoneValidatorService;
 import org.junit.jupiter.api.Test;
@@ -35,5 +38,18 @@ public class PhoneValidatorControllerTest {
         .andExpect(jsonPath("countryCode", equalTo(detailsExpected.getCountryCode())))
         .andExpect(jsonPath("countryName", equalTo(detailsExpected.getCountryName())))
         .andExpect(jsonPath("operatorName", equalTo(detailsExpected.getOperatorName())));
+  }
+
+  @Test
+  public void testGetPhoneNumberDetailsAfterValidation_invalidPhoneNumber() throws Exception {
+
+    String PHONE_NUMBER = "+961701804";
+    when(service.getPhoneNumberDetailsAfterValidation(eq(PHONE_NUMBER)))
+        .thenThrow(new InvalidPhoneNumberException(ErrorMessages.INVALID_PHONE_NUMBER));
+    this.mockMvc
+        .perform(get("/api/v1/validators/" + PHONE_NUMBER))
+        .andDo(print())
+        .andExpect(status().isBadRequest())
+        .andExpect(content().string(ErrorMessages.INVALID_PHONE_NUMBER));
   }
 }
