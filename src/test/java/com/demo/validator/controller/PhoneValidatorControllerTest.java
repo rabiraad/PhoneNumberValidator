@@ -52,4 +52,17 @@ public class PhoneValidatorControllerTest {
         .andExpect(status().isBadRequest())
         .andExpect(content().string(ErrorMessages.INVALID_PHONE_NUMBER));
   }
+
+  @Test
+  public void testGetPhoneNumberDetailsAfterValidation_invalidPhoneNumberFormat() throws Exception {
+
+    String PHONE_NUMBER = "0096170173804";
+    when(service.getPhoneNumberDetailsAfterValidation(eq(PHONE_NUMBER)))
+        .thenThrow(new InvalidPhoneNumberException(ErrorMessages.INVALID_PHONE_NUMBER_FORMAT));
+    this.mockMvc
+        .perform(get("/api/v1/validators/" + PHONE_NUMBER))
+        .andDo(print())
+        .andExpect(status().isBadRequest())
+        .andExpect(content().string(ErrorMessages.INVALID_PHONE_NUMBER_FORMAT));
+  }
 }
